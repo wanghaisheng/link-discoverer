@@ -1,0 +1,19 @@
+{
+  "name": "link-discoverer",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tylrhas/link-discoverer.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tylrhas/link-discoverer/issues"
+  },
+  "homepage": "https://github.com/tylrhas/link-discoverer#readme"
+}
