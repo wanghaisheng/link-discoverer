@@ -2,8 +2,11 @@ const axios = require('axios')
 const cheerio = require('cheerio')
 class LinkDiscoverer {
   constructor(homepageUrl) {
+    if (!homepageUrl) {
+      throw new Error('missing constructor param')
+    }
     this.homepageUrl = homepageUrl
-    this.pages = []
+    this.pages = [homepageUrl]
     this.pagesToCrawl = [homepageUrl]
     this.crawledPages = []
     this.urlRejects = [
@@ -15,15 +18,20 @@ class LinkDiscoverer {
   }
 
   /**
-   * GET request to url
-   *
-   * @param {*} url
-   * @returns
-   * @memberof linkDiscoverer
+   * Tests if a string is a Valid URL
+   * @param {*} str
+   * @returns { Boolean }
+   * @memberof LinkDiscoverer
    */
 
-  requestPage(url) {
-    return axios.get(url)
+  validURL(str) {
+    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
+      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+      '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+    return !!pattern.test(str);
   }
 
   /**
@@ -59,16 +67,21 @@ class LinkDiscoverer {
    */
 
   getLinks(page) {
-    const $ = cheerio.load(page)
-    const anchors = $('a').toArray()
-    anchors.forEach((anchor) => {
-      if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
-        const link = this.formatLink(anchor.attribs.href)
-        if (link.includes(this.homepageUrl) && !this.pages.includes(link)) {
-          this.pages.push(link)
+    if (page && typeof page === "string") {
+      const $ = cheerio.load(page)
+      const anchors = $('a').toArray()
+      anchors.forEach((anchor) => {
+        if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
+          const link = this.formatLink(anchor.attribs.href)
+          if (link.includes(this.homepageUrl) && !this.pages.includes(link)) {
+            this.pages.push(link)
+          }
+          if (link.includes(this.homepageUrl) && !this.pagesToCrawl.includes(link) && !this.crawledPages.includes(link)) {
+            this.pagesToCrawl.push(link)
+          }
         }
-      }
-    }, this)
+      }, this)
+    }
   }
 
   /**
@@ -79,13 +92,27 @@ class LinkDiscoverer {
    * @memberof LinkDiscoverer
    */
   formatLink(link) {
+    let formattedLink = link
     if (link.charAt(0) === '/') {
-      return `${this.homepageUrl}${link}`
+      formattedLink = this.homepageUrl.slice(-1) === '/'
+        ? `${this.homepageUrl}${link.substring(1)}`
+        : `${this.homepageUrl}${link}`
     } else if (!/\.(com|net|org|biz|ca|care|gov)/.test(link)) {
-      return `${this.homepageUrl}/${link}`
-    } else {
-      return link
+      formattedLink = `${this.homepageUrl}/${link}`
     }
+    return formattedLink
+  }
+
+  /**
+  * GET request to url
+  *
+  * @param {*} url
+  * @returns
+  * @memberof linkDiscoverer
+  */
+
+  requestPage(url) {
+    return axios.get(url)
   }
 
   /**
