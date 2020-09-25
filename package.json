@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,14 @@
   "homepage": "https://github.com/tylrhas/link-discoverer#readme",
   "dependencies": {
     "axios": "^0.20.0",
-    "cheerio": "^1.0.0-rc.3",
+    "cheerio": "^1.0.0-rc.3"
+  },
+  "devDependencies": {
     "jest": "^26.4.2"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "__tests__/config/"
+    ]
   }
 }
