@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon ./index.js",
+    "docker:build": "docker build -t link-discoverer .",
     "test": "jest"
   },
   "repository": {
@@ -21,7 +23,8 @@
     "cheerio": "^1.0.0-rc.3"
   },
   "devDependencies": {
-    "jest": "^26.4.2"
+    "jest": "^26.4.2",
+    "nodemon": "^2.0.4"
   },
   "jest": {
     "testPathIgnorePatterns": [
