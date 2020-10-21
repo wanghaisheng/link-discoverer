@@ -20,7 +20,8 @@
   "homepage": "https://github.com/tylrhas/link-discoverer#readme",
   "dependencies": {
     "axios": "^0.20.0",
-    "cheerio": "^1.0.0-rc.3"
+    "cheerio": "^1.0.0-rc.3",
+    "express": "^4.17.1"
   },
   "devDependencies": {
     "jest": "^26.4.2",

@@ -5,9 +5,10 @@ class LinkDiscoverer {
     if (!homepageUrl) {
       throw new Error('missing constructor param')
     }
-    this.homepageUrl = homepageUrl
-    this.pages = [homepageUrl]
-    this.pagesToCrawl = [homepageUrl]
+    const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
+    this.homepageUrl = url
+    this.pages = [url]
+    this.pagesToCrawl = [url]
     this.crawledPages = []
     this.urlRejects = [
       'tel:',
@@ -51,12 +52,16 @@ class LinkDiscoverer {
    */
 
   async run() {
-    while (this.pagesToCrawl.length > 0) {
-      const url = this.nextPage()
-      const page = await this.requestPage(url)
-      await this.getLinks(page.data)
-      this.crawledPages.push(url)
-    }
+      while (this.pagesToCrawl.length > 0) {
+        try {
+          const url = this.nextPage()
+          const page = await this.requestPage(url)
+          await this.getLinks(page.data)
+          this.crawledPages.push(url) 
+        } catch (error) {
+          console.log(error)
+        }
+      } 
   }
 
   /**
@@ -97,12 +102,25 @@ class LinkDiscoverer {
       formattedLink = this.homepageUrl.slice(-1) === '/'
         ? `${this.homepageUrl}${link.substring(1)}`
         : `${this.homepageUrl}${link}`
-    } else if (!/\.(com|net|org|biz|ca|care|gov)/.test(link)) {
-      formattedLink = `${this.homepageUrl}/${link}`
+    } else if (!/(http|https)|\.(com|net|org|biz|ca|care|gov)/.test(link)) {
+    formattedLink = `${this.homepageUrl}${link}`
     }
-    return formattedLink
+    const trimLink = this.trimQuery(formattedLink)
+    return trimLink
   }
 
+   trimQuery(link) {
+
+     if (link.includes('?')) {
+       const li = link.lastIndexOf('?')
+       link = link.substr(0, li)
+     }
+     if (link.includes('#')) {
+      const li = link.lastIndexOf('#')
+      link = link.substr(0, li)
+    }
+     return link
+   }
   /**
   * GET request to url
   *
