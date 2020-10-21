@@ -17,9 +17,13 @@ app.get('/', (req, res) => {
 })
 
 app.post('/discover', async (req, res) => {
-  const { url } = req.body
-  const sitemap = await rover(url)
-  res.json(sitemap)
+  try {
+    const { url } = req.body
+    const sitemap = await rover(url)
+    res.json(sitemap)
+  } catch (err) {
+    res.status(503).send('There was a problem.')
+  }
 })
 
 app.listen(port, () => {
