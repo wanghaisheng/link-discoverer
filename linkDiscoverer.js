@@ -52,16 +52,16 @@ class LinkDiscoverer {
    */
 
   async run() {
-    try {
       while (this.pagesToCrawl.length > 0) {
-        const url = this.nextPage()
-        const page = await this.requestPage(url)
-        await this.getLinks(page.data)
-        this.crawledPages.push(url)
+        try {
+          const url = this.nextPage()
+          const page = await this.requestPage(url)
+          await this.getLinks(page.data)
+          this.crawledPages.push(url) 
+        } catch (error) {
+          console.log(error)
+        }
       } 
-    } catch (error) {
-      console.log(error)
-    }
   }
 
   /**
