@@ -16,13 +16,13 @@ app.get('/', (req, res) => {
   res.send('I\'m Here!')
 })
 
-app.post('/discover', async (req, res) => {
+app.post('/', async (req, res) => {
   try {
     const { url } = req.body
     const sitemap = await rover(url)
     res.json(sitemap)
   } catch (err) {
-    res.status(503).send('There was a problem.')
+    res.status(503).send(`There was a problem: ${err}`)
   }
 })
 
