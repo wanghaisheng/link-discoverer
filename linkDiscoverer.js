@@ -1,7 +1,7 @@
 const axios = require('axios')
 const cheerio = require('cheerio')
 class LinkDiscoverer {
-  constructor(homepageUrl) {
+  constructor(homepageUrl, call) {
     if (!homepageUrl) {
       throw new Error('missing constructor param')
     }
@@ -10,6 +10,7 @@ class LinkDiscoverer {
     this.pages = [url]
     this.pagesToCrawl = [url]
     this.crawledPages = []
+    this.call = call ? call : null
     this.urlRejects = [
       'tel:',
       'mailto:',
@@ -53,6 +54,11 @@ class LinkDiscoverer {
 
   async run() {
       while (this.pagesToCrawl.length > 0) {
+        if (this.call) {
+          const totalPages = this.crawledPages.length + this.pagesToCrawl.length 
+          const progress = (this.crawledPages.length + 1) / totalPages
+          this.call.write({ progress })
+        }
         try {
           const url = this.nextPage()
           const page = await this.requestPage(url)
@@ -62,6 +68,9 @@ class LinkDiscoverer {
           console.log(error)
         }
       } 
+      if (this.call) {
+        this.call.end()
+      }
   }
 
   /**
