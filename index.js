@@ -1,31 +1,40 @@
+const PROTO_PATH = __dirname + '/proto/linkDiscoverer.proto';
+
+const grpc = require('@grpc/grpc-js');
+const protoLoader = require('@grpc/proto-loader');
+
+
+let packageDefinition = protoLoader.loadSync(
+  PROTO_PATH,
+  {
+    keepCase: true,
+    longs: String,
+    enums: String,
+    defaults: true,
+    oneofs: true
+  });
+let employee_proto = grpc.loadPackageDefinition(packageDefinition).linkDiscoverer;
+
+
+// let { paySalary } = require('./pay_salary.js');
+// let { generateReport } = require('./generate_report.js');
 const LinkDiscoverer = require('./linkDiscoverer')
-const express = require('express')
-const bodyParser = require('body-parser')
-const app = express()
-const port = process.env.PORT || 8080
 
-app.use(bodyParser.json({ limit: '1000kb' }))
+function discoverLinks (call) {
 
-async function rover(url) {
-  const linkDiscoverer = new LinkDiscoverer(url)
-  await linkDiscoverer.run()
-  return linkDiscoverer.sitemap
+  const linkDiscoverer = new LinkDiscoverer(call.request.url, call)
+  linkDiscoverer.run()
+  // return linkDiscoverer.sitemap
 }
 
-app.get('/', (req, res) => {
-  res.send('I\'m Here!')
-})
+function main() {
+  let server = new grpc.Server();
+  server.addService(employee_proto.LinkDiscoverer.service, 
+    { discoverLinks: discoverLinks }
+  );
+  server.bindAsync('0.0.0.0:4500', grpc.ServerCredentials.createInsecure(), (err, port) => {
+    server.start()
+  });
+}
 
-app.post('/', async (req, res) => {
-  try {
-    const { url } = req.body
-    const sitemap = await rover(url)
-    res.json(sitemap)
-  } catch (err) {
-    res.status(503).send(`There was a problem: ${err}`)
-  }
-})
-
-app.listen(port, () => {
-  console.log(`Listening on port ${port}`)
-})
+main();
