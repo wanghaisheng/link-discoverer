@@ -24,10 +24,9 @@ function main() {
   server.addService(link_proto.LinkDiscoverer.service,
     { discoverLinks: discoverLinks }
   )
-  server.bindAsync('localhost:8080', grpc.ServerCredentials.createInsecure(), (err, port) => {
-  // server.bindAsync(`0.0.0.0:${process.env.PORT || 8080}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
+  server.bindAsync(`0.0.0.0:${process.env.PORT || 8080}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     server.start()
-    console.log(`Server listening on localhost:${port}`)
+    console.log(`Server listening on 0.0.0.0:${port}`)
   })
 }
 
