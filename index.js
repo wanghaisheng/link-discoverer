@@ -1,40 +1,33 @@
-const PROTO_PATH = __dirname + '/proto/linkDiscoverer.proto';
+const protoPath = __dirname + '/proto/link-discoverer.proto'
+const grpc = require('@grpc/grpc-js')
+const protoLoader = require('@grpc/proto-loader')
+const config = {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true
+}
 
-const grpc = require('@grpc/grpc-js');
-const protoLoader = require('@grpc/proto-loader');
+let packageDefinition = protoLoader.loadSync(protoPath, config)
+let link_proto = grpc.loadPackageDefinition(packageDefinition).linkDiscoverer
 
+const LinkDiscoverer = require('./link-discoverer')
 
-let packageDefinition = protoLoader.loadSync(
-  PROTO_PATH,
-  {
-    keepCase: true,
-    longs: String,
-    enums: String,
-    defaults: true,
-    oneofs: true
-  });
-let employee_proto = grpc.loadPackageDefinition(packageDefinition).linkDiscoverer;
-
-
-// let { paySalary } = require('./pay_salary.js');
-// let { generateReport } = require('./generate_report.js');
-const LinkDiscoverer = require('./linkDiscoverer')
-
-function discoverLinks (call) {
-
+function discoverLinks(call) {
   const linkDiscoverer = new LinkDiscoverer(call.request.url, call)
   linkDiscoverer.run()
-  // return linkDiscoverer.sitemap
 }
 
 function main() {
-  let server = new grpc.Server();
-  server.addService(employee_proto.LinkDiscoverer.service, 
+  let server = new grpc.Server()
+  server.addService(link_proto.LinkDiscoverer.service,
     { discoverLinks: discoverLinks }
-  );
-  server.bindAsync('0.0.0.0:4500', grpc.ServerCredentials.createInsecure(), (err, port) => {
+  )
+  server.bindAsync(`0.0.0.0:${process.env.PORT || 8080}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     server.start()
-  });
+    console.log(`Server listening on 0.0.0.0:${port}`)
+  })
 }
 
-main();
+main()

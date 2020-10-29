@@ -1,4 +1,4 @@
-const LinkDiscoverer = require('../linkDiscoverer')
+const LinkDiscoverer = require('../link-discoverer')
 const mockAxios = require('axios')
 const html = require('./config/html')
 

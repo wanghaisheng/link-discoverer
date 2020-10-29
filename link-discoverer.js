@@ -55,7 +55,7 @@ class LinkDiscoverer {
   async run() {
       while (this.pagesToCrawl.length > 0) {
         if (this.call) {
-          const totalPages = this.crawledPages.length + this.pagesToCrawl.length 
+          const totalPages = this.crawledPages.length + this.pagesToCrawl.length
           const progress = (this.crawledPages.length + 1) / totalPages
           this.call.write({ progress })
         }
@@ -63,11 +63,11 @@ class LinkDiscoverer {
           const url = this.nextPage()
           const page = await this.requestPage(url)
           await this.getLinks(page.data)
-          this.crawledPages.push(url) 
+          this.crawledPages.push(url)
         } catch (error) {
           console.log(error)
         }
-      } 
+      }
       if (this.call) {
         this.call.end()
       }
