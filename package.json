@@ -22,8 +22,7 @@
     "@grpc/grpc-js": "^1.1.7",
     "@grpc/proto-loader": "^0.5.5",
     "axios": "^0.20.0",
-    "cheerio": "^1.0.0-rc.3",
-    "express": "^4.17.1"
+    "cheerio": "^1.0.0-rc.3"
   },
   "devDependencies": {
     "jest": "^26.4.2",
