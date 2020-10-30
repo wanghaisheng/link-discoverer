@@ -15,6 +15,7 @@ let link_proto = grpc.loadPackageDefinition(packageDefinition).linkDiscoverer
 const LinkDiscoverer = require('./link-discoverer')
 
 function DiscoverLinks(call) {
+  console.log('We are scraping' + call.request.url)
   const linkDiscoverer = new LinkDiscoverer(call.request.url, call)
   linkDiscoverer.run()
 }
