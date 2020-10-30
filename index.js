@@ -26,7 +26,7 @@ function main() {
   )
   server.bindAsync(`0.0.0.0:${process.env.PORT || 8080}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     server.start()
-    console.log(`Server listening on 0.0.0.0:${port}`)
+    console.log(`Server listening on :${port}`)
   })
 }
 
