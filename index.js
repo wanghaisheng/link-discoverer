@@ -14,7 +14,7 @@ let link_proto = grpc.loadPackageDefinition(packageDefinition).linkDiscoverer
 
 const LinkDiscoverer = require('./link-discoverer')
 
-function discoverLinks(call) {
+function DiscoverLinks(call) {
   const linkDiscoverer = new LinkDiscoverer(call.request.url, call)
   linkDiscoverer.run()
 }
@@ -22,7 +22,7 @@ function discoverLinks(call) {
 function main() {
   let server = new grpc.Server()
   server.addService(link_proto.LinkDiscoverer.service,
-    { discoverLinks: discoverLinks }
+    { DiscoverLinks: DiscoverLinks }
   )
   server.bindAsync(`0.0.0.0:${process.env.PORT || 8080}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     server.start()

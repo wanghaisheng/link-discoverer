@@ -3,14 +3,14 @@ syntax = "proto3";
 package linkDiscoverer;
 
 service LinkDiscoverer {
-  rpc discoverLinks (discoverRequest) returns (stream discoverResponse) {}
+  rpc DiscoverLinks (DiscoverRequest) returns (stream DiscoverResponse) {}
 }
 
-message discoverRequest {
+message DiscoverRequest {
   string url = 1;
 }
 
-message discoverResponse {
+message DiscoverResponse {
  float progress = 1;
  repeated string errors = 2;
  repeated string logs = 3;
