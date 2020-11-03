@@ -1,13 +1,17 @@
 const axios = require('axios')
 const cheerio = require('cheerio')
+const { PubSub } = require('@google-cloud/pubsub')
 class LinkDiscoverer {
-  constructor(homepageUrl) {
+  constructor(homepageUrl, topicName) {
     if (!homepageUrl) {
       throw new Error('missing constructor param')
     }
     const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
+    this.topicName = topicName
+    this.pubSubClient = new PubSub()
     this.homepageUrl = url
     this.pages = [url]
+    this.complete = false
     this.pagesToCrawl = [url]
     this.crawledPages = []
     this.urlRejects = [
@@ -54,6 +58,12 @@ class LinkDiscoverer {
   async run() {
       while (this.pagesToCrawl.length > 0) {
         try {
+          if (this.topicName) {
+          const totalPages = this.crawledPages.length + this.pagesToCrawl.length
+          const progress = (this.crawledPages.length + 1) / totalPages
+          const dataBuffer = Buffer.from(JSON.stringify({ data, complete: this.complete }))
+          await pubSubClient.topic(this.topicName).publish(dataBuffer)
+        }
           const url = this.nextPage()
           const page = await this.requestPage(url)
           await this.getLinks(page.data)
@@ -61,7 +71,14 @@ class LinkDiscoverer {
         } catch (error) {
           console.log(error)
         }
-      } 
+      }
+      this.complete = true
+      if (this.topicName) {
+        const totalPages = this.crawledPages.length + this.pagesToCrawl.length
+        const progress = (this.crawledPages.length + 1) / totalPages
+        const dataBuffer = Buffer.from(JSON.stringify({ data, complete: this.complete }))
+        await pubSubClient.topic(this.topicName).publish(dataBuffer)
+      }
   }
 
   /**

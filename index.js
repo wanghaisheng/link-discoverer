@@ -1,37 +1,31 @@
-// Copyright 2020 Google LLC. All rights reserved.
-// Use of this source code is governed by the Apache 2.0
-// license that can be found in the LICENSE file.
+const LinkDiscoverer = require('./linkDiscoverer')
+const express = require('express')
+const bodyParser = require('body-parser')
+const app = express()
+const port = process.env.PORT || 8080
 
-// [START run_pubsub_server_setup]
-const express = require('express');
-const bodyParser = require('body-parser');
-const app = express();
+app.use(bodyParser.json({ limit: '1000kb' }))
 
-app.use(bodyParser.json());
-// [END run_pubsub_server_setup]
+async function rover(url, topicName) {
+  const linkDiscoverer = new LinkDiscoverer(url, topicName)
+  await linkDiscoverer.run()
+  return linkDiscoverer.sitemap
+}
 
-// [START run_pubsub_handler]
-app.post('/', (req, res) => {
-  if (!req.body) {
-    const msg = 'no Pub/Sub message received';
-    console.error(`error: ${msg}`);
-    res.status(400).send(`Bad Request: ${msg}`);
-    return;
+app.get('/', (req, res) => {
+  res.send('I\'m Here!')
+})
+
+app.post('/discover', async (req, res) => {
+  try {
+    const { url, topicName } = req.body
+    const sitemap = await rover(url, topicName)
+    res.json(sitemap)
+  } catch (err) {
+    res.status(503).send('There was a problem.')
   }
-  if (!req.body.message) {
-    const msg = 'invalid Pub/Sub message format';
-    console.error(`error: ${msg}`);
-    res.status(400).send(`Bad Request: ${msg}`);
-    return;
-  }
+})
 
-  const pubSubMessage = req.body.message;
-  const name = pubSubMessage.data
-    ? Buffer.from(pubSubMessage.data, 'base64').toString().trim()
-    : 'World';
-
-  console.log(`Hello ${name}!`);
-  res.status(204).send();
-});
-
-module.exports = app;
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+})
