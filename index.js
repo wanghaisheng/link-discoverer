@@ -4,7 +4,6 @@ const bodyParser = require('body-parser')
 const app = express()
 const port = process.env.PORT || 8080
 app.use(bodyParser.json({ limit: '1000kb' }))
-const ws = require('ws')
 
 async function rover(url) {
   const linkDiscoverer = new LinkDiscoverer(url)
