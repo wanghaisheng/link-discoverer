@@ -1,6 +1,7 @@
 const axios = require('axios')
 const cheerio = require('cheerio')
 const { PubSub } = require('@google-cloud/pubsub')
+const { GCP_PROJECT_ID } = process.env
 class LinkDiscoverer {
   constructor(homepageUrl, topicName) {
     if (!homepageUrl) {
@@ -8,7 +9,7 @@ class LinkDiscoverer {
     }
     const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
     this.topicName = topicName
-    this.pubSubClient = new PubSub()
+    this.pubSubClient = new PubSub({ projectId })
     this.homepageUrl = url
     this.pages = [url]
     this.complete = false
