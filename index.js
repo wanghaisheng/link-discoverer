@@ -22,7 +22,7 @@ app.post('/discover', async (req, res) => {
     const sitemap = await rover(url, topicName)
     res.json(sitemap)
   } catch (err) {
-    res.status(503).send('There was a problem.')
+    res.status(503).send(err)
   }
 })
 
