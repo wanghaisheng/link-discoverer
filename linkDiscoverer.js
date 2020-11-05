@@ -70,7 +70,7 @@ class LinkDiscoverer {
               results : null,
               errors: null
              }))
-            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
+             await this.pubSubClient.topic(this.topicName).publish({data: dataBuffer, orderingKey: 'linkDiscoverer' })
           }
           const page = await this.requestPage(url)
           await this.getLinks(page.data)
@@ -86,7 +86,7 @@ class LinkDiscoverer {
               results : null,
               error
             }))
-            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
+            await this.pubSubClient.topic(this.topicName).publish({data: dataBuffer, orderingKey: 'linkDiscoverer' })
           }
           console.log(error)
         }
@@ -102,7 +102,7 @@ class LinkDiscoverer {
           results : this.pages,
           errors: null
         }))
-        await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
+        await this.pubSubClient.topic(this.topicName).publish({data: dataBuffer, orderingKey: 'linkDiscoverer' })
       }
   }
 
