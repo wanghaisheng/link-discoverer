@@ -63,6 +63,7 @@ class LinkDiscoverer {
           const totalPages = this.crawledPages.length + this.pagesToCrawl.length
           const progress = (this.crawledPages.length + 1) / totalPages
           const dataBuffer = Buffer.from(JSON.stringify({ progress, complete: this.complete }))
+          console.log('publishing', dataBuffer)
           await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
         }
           const url = this.nextPage()
@@ -78,6 +79,7 @@ class LinkDiscoverer {
         const totalPages = this.crawledPages.length + this.pagesToCrawl.length
         const progress = (this.crawledPages.length + 1) / totalPages
         const dataBuffer = Buffer.from(JSON.stringify({ progress, complete: this.complete }))
+        console.log('publishing', dataBuffer)
         await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
       }
   }
