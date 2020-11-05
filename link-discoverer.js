@@ -2,6 +2,7 @@ const axios = require('axios')
 const cheerio = require('cheerio')
 const { PubSub } = require('@google-cloud/pubsub')
 const { GCP_PROJECT_ID: projectId } = process.env
+
 class LinkDiscoverer {
   constructor(homepageUrl, topicName) {
     if (!homepageUrl) {
@@ -29,7 +30,6 @@ class LinkDiscoverer {
    * @returns { Boolean }
    * @memberof LinkDiscoverer
    */
-
   validURL(str) {
     var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
       '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
@@ -37,25 +37,21 @@ class LinkDiscoverer {
       '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
       '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
       '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-    return !!pattern.test(str);
+    return !!pattern.test(str)
   }
 
   /**
    * Get next page URL to crawl
-   *
    * @memberof linkDiscoverer
    */
-
   nextPage() {
     return this.pagesToCrawl.pop()
   }
 
   /**
    * Discover all Links on the website
-   *
    * @memberof linkDiscoverer
    */
-
   async run() {
       while (this.pagesToCrawl.length > 0) {
         try {
@@ -69,7 +65,7 @@ class LinkDiscoverer {
           const url = this.nextPage()
           const page = await this.requestPage(url)
           await this.getLinks(page.data)
-          this.crawledPages.push(url) 
+          this.crawledPages.push(url)
         } catch (error) {
           console.log(error)
         }
@@ -86,11 +82,9 @@ class LinkDiscoverer {
 
   /**
    * Find links on the page
-   *
    * @param {*} page
    * @memberof linkDiscoverer
    */
-
   getLinks(page) {
     if (page && typeof page === "string") {
       const $ = cheerio.load(page)
@@ -111,7 +105,6 @@ class LinkDiscoverer {
 
   /**
    * Make sure the link is an absolute path
-   *
    * @param {*} link
    * @returns
    * @memberof LinkDiscoverer
@@ -129,33 +122,30 @@ class LinkDiscoverer {
     return trimLink
   }
 
-   trimQuery(link) {
-
-     if (link.includes('?')) {
-       const li = link.lastIndexOf('?')
-       link = link.substr(0, li)
-     }
-     if (link.includes('#')) {
+  trimQuery(link) {
+    if (link.includes('?')) {
+      const li = link.lastIndexOf('?')
+      link = link.substr(0, li)
+    }
+    if (link.includes('#')) {
       const li = link.lastIndexOf('#')
       link = link.substr(0, li)
     }
-     return link
-   }
+    return link
+  }
+
   /**
   * GET request to url
-  *
   * @param {*} url
   * @returns
   * @memberof linkDiscoverer
   */
-
   requestPage(url) {
     return axios.get(url)
   }
 
   /**
    * Check if the anchor contains any of the rejected formats
-   *
    * @param {String} anchor
    * @returns Boolean
    * @memberof linkDiscoverer
@@ -163,9 +153,9 @@ class LinkDiscoverer {
   isKeeper(anchor) {
     return this.urlRejects.every(reject => !anchor.includes(reject))
   }
+
   /**
    * Remove any querystrings and hash from url
-   *
    * @param {*} url
    * @memberof linkDiscoverer
    */
