@@ -59,18 +59,35 @@ class LinkDiscoverer {
   async run() {
       while (this.pagesToCrawl.length > 0) {
         try {
-          if (this.topicName) {
-          const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-          const progress = (this.crawledPages.length + 1) / totalPages
-          const dataBuffer = Buffer.from(JSON.stringify({ progress, complete: this.complete }))
-          console.log('publishing', dataBuffer)
-          await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
-        }
           const url = this.nextPage()
+          if (this.topicName) {
+            const totalPages = this.crawledPages.length + this.pagesToCrawl.length
+            const progress = (this.crawledPages.length + 1) / totalPages
+            const dataBuffer = Buffer.from(JSON.stringify({
+              progress,
+              complete: this.complete,
+              logs : [url],
+              results : null,
+              errors: null
+             }))
+            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
+          }
           const page = await this.requestPage(url)
           await this.getLinks(page.data)
           this.crawledPages.push(url) 
         } catch (error) {
+          if (this.topicName) {
+            const totalPages = this.crawledPages.length + this.pagesToCrawl.length
+            const progress = (this.crawledPages.length + 1) / totalPages
+            const dataBuffer = Buffer.from(JSON.stringify({
+              progress,
+              complete: this.complete,
+              logs : null,
+              results : null,
+              errors: [error]
+            }))
+            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
+          }
           console.log(error)
         }
       }
@@ -78,8 +95,13 @@ class LinkDiscoverer {
       if (this.topicName) {
         const totalPages = this.crawledPages.length + this.pagesToCrawl.length
         const progress = (this.crawledPages.length + 1) / totalPages
-        const dataBuffer = Buffer.from(JSON.stringify({ progress, complete: this.complete }))
-        console.log('publishing', dataBuffer)
+        const dataBuffer = Buffer.from(JSON.stringify({
+          progress,
+          complete: this.complete,
+          logs : null,
+          results : this.pages,
+          errors: null
+        }))
         await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
       }
   }
