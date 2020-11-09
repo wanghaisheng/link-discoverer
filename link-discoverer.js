@@ -2,7 +2,6 @@ const axios = require('axios')
 const cheerio = require('cheerio')
 const { PubSub } = require('@google-cloud/pubsub')
 const { GCP_PROJECT_ID: projectId } = process.env
-
 class LinkDiscoverer {
   constructor(homepageUrl, topicName) {
     if (!homepageUrl) {
@@ -48,58 +47,45 @@ class LinkDiscoverer {
     return this.pagesToCrawl.pop()
   }
 
+  async sendBuffer(log, results, errors) {
+    const totalPages = this.crawledPages.length + this.pagesToCrawl.length
+    const progress = (this.crawledPages.length + 1) / totalPages
+    const dataBuffer = Buffer.from(JSON.stringify({
+      progress,
+      complete: this.complete,
+      log,
+      results,
+      errors
+     }))
+     await this.pubSubClient.topic(this.topicName, { enableMessageOrdering: true })
+      .publishMessage({data: dataBuffer, orderingKey: 'linkDiscoverer' })
+  }
+
   /**
    * Discover all Links on the website
    * @memberof linkDiscoverer
    */
   async run() {
-      while (this.pagesToCrawl.length > 0) {
-        try {
-          const url = this.nextPage()
-          if (this.topicName) {
-            const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-            const progress = (this.crawledPages.length + 1) / totalPages
-            const dataBuffer = Buffer.from(JSON.stringify({
-              progress,
-              complete: this.complete,
-              logs : [url],
-              results : null,
-              errors: null
-             }))
-            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
-          }
-          const page = await this.requestPage(url)
-          await this.getLinks(page.data)
-          this.crawledPages.push(url)
-        } catch (error) {
-          if (this.topicName) {
-            const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-            const progress = (this.crawledPages.length + 1) / totalPages
-            const dataBuffer = Buffer.from(JSON.stringify({
-              progress,
-              complete: this.complete,
-              logs : null,
-              results : null,
-              errors: [error]
-            }))
-            await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
-          }
-          console.log(error)
+    while (this.pagesToCrawl.length > 0) {
+      try {
+        const url = this.nextPage()
+        if (this.topicName) {
+          await this.sendBuffer(url, null, null)
         }
+        const page = await this.requestPage(url)
+        await this.getLinks(page.data)
+        this.crawledPages.push(url) 
+      } catch (error) {
+        if (this.topicName) {
+          await this.sendBuffer(null, null, error)
+        }
+        console.log(error)
       }
-      this.complete = true
-      if (this.topicName) {
-        const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-        const progress = (this.crawledPages.length + 1) / totalPages
-        const dataBuffer = Buffer.from(JSON.stringify({
-          progress,
-          complete: this.complete,
-          logs : null,
-          results : this.pages,
-          errors: null
-        }))
-        await this.pubSubClient.topic(this.topicName).publish(dataBuffer)
-      }
+    }
+    this.complete = true
+    if (this.topicName) {
+      await this.sendBuffer(null, this.pages, null)
+    }
   }
 
   /**
