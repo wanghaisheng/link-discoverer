@@ -49,7 +49,7 @@ class LinkDiscoverer {
 
   async sendBuffer(log, results, errors) {
     const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-    const progress = (this.crawledPages.length + 1) / totalPages
+    const progress = this.crawledPages.length / totalPages
     const dataBuffer = Buffer.from(JSON.stringify({
       progress,
       complete: this.complete,
@@ -69,6 +69,7 @@ class LinkDiscoverer {
     while (this.pagesToCrawl.length > 0) {
       try {
         const url = this.nextPage()
+        console.log(url)
         if (this.topicName) {
           await this.sendBuffer(url, null, null)
         }
