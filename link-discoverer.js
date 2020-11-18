@@ -47,9 +47,9 @@ class LinkDiscoverer {
     return this.pagesToCrawl.pop()
   }
 
-  async sendBuffer(log, results, errors) {
+  sendBuffer(log, results, errors) {
     const totalPages = this.crawledPages.length + this.pagesToCrawl.length
-    const progress = this.crawledPages.length / totalPages
+    const progress = Math.round(this.crawledPages.length / totalPages)
     const dataBuffer = Buffer.from(JSON.stringify({
       progress,
       complete: this.complete,
@@ -57,7 +57,7 @@ class LinkDiscoverer {
       results,
       errors
      }))
-     await this.pubSubClient.topic(this.topicName, { enableMessageOrdering: true })
+     this.pubSubClient.topic(this.topicName, { enableMessageOrdering: true })
       .publishMessage({data: dataBuffer, orderingKey: 'linkDiscoverer' })
   }
 
@@ -71,10 +71,10 @@ class LinkDiscoverer {
         const url = this.nextPage()
         console.log(url)
         if (this.topicName) {
-          await this.sendBuffer(url, null, null)
+          this.sendBuffer(url, null, null)
         }
         const page = await this.requestPage(url)
-        await this.getLinks(page.data)
+        this.getLinks(page.data)
         this.crawledPages.push(url) 
       } catch (error) {
         if (this.topicName) {
@@ -85,7 +85,7 @@ class LinkDiscoverer {
     }
     this.complete = true
     if (this.topicName) {
-      await this.sendBuffer(null, this.pages, null)
+      this.sendBuffer(null, this.pages, null)
     }
   }
 
