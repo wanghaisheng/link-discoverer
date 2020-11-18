@@ -78,7 +78,7 @@ class LinkDiscoverer {
         this.crawledPages.push(url) 
       } catch (error) {
         if (this.topicName) {
-          await this.sendBuffer(null, null, error)
+          this.sendBuffer(null, null, error)
         }
         console.log(error)
       }
