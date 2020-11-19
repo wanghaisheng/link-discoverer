@@ -19,7 +19,15 @@ class LinkDiscoverer {
       'tel:',
       'mailto:',
       '.jpg',
-      'javascript:void(0)'
+      'javascript:void(0)',
+      '.js',
+      '.png',
+      '.css',
+      '.svg',
+      '.gif',
+      'sitemap',
+      '.xml',
+      '.json'
     ]
   }
 
