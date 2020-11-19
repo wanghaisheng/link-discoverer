@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 app.post('/discover', async (req, res) => {
   try {
     const { url, topicName } = req.body
+    console.log(topicName)
     if (topicName) {
       rover(url, topicName)
       res.sendStatus(200)
