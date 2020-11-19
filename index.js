@@ -19,8 +19,13 @@ app.get('/', (req, res) => {
 app.post('/discover', async (req, res) => {
   try {
     const { url, topicName } = req.body
-    rover(url, topicName)
-    res.json(200)
+    if (topicName) {
+      rover(url, topicName)
+      res.sendStatus(200)
+    } else {
+      const sitemap = await rover(url, null)
+      res.json(sitemap)
+    }
   } catch (err) {
     res.status(503).send(err)
   }
