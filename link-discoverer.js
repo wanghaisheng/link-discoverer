@@ -27,7 +27,10 @@ class LinkDiscoverer {
       '.gif',
       'sitemap',
       '.xml',
-      '.json'
+      '.json',
+      'javascript',
+      'JavaScript',
+      '.jpeg',
     ]
   }
 
