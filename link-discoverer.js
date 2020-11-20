@@ -88,7 +88,6 @@ class LinkDiscoverer {
         if (this.topicName) {
           this.sendBuffer(null, null, error)
         }
-        console.log(error)
       }
     }
     this.complete = true
