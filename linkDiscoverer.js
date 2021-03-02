@@ -7,9 +7,12 @@ class LinkDiscoverer {
     }
     const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
     this.homepageUrl = url
+    this.rootDomain = this.getRootDomain(url)
     this.pages = [url]
     this.pagesToCrawl = [url]
     this.crawledPages = []
+    this.currentUrl = null
+    this.urlsWithErrors = []
     this.urlRejects = [
       'tel:',
       'mailto:',
@@ -54,11 +57,12 @@ class LinkDiscoverer {
   async run() {
       while (this.pagesToCrawl.length > 0) {
         try {
-          const url = this.nextPage()
-          const page = await this.requestPage(url)
+          this.currentUrl = this.nextPage()
+          const page = await this.requestPage()
           await this.getLinks(page.data)
-          this.crawledPages.push(url) 
+          this.crawledPages.push(this.currentUrl) 
         } catch (error) {
+          this.urlsWithErrors.push(this.currentUrl)
           console.log(error)
         }
       } 
@@ -81,7 +85,7 @@ class LinkDiscoverer {
           if (link.includes(this.homepageUrl) && !this.pages.includes(link)) {
             this.pages.push(link)
           }
-          if (link.includes(this.homepageUrl) && !this.pagesToCrawl.includes(link) && !this.crawledPages.includes(link)) {
+          if (link.includes(this.homepageUrl) && !this.pagesToCrawl.includes(link) && !this.crawledPages.includes(link) && !this.urlsWithErrors.includes(link) && this.currentUrl !== link) {
             this.pagesToCrawl.push(link)
           }
         }
@@ -99,14 +103,17 @@ class LinkDiscoverer {
   formatLink(link) {
     let formattedLink = link
     if (link.charAt(0) === '/') {
-      formattedLink = this.homepageUrl.slice(-1) === '/'
-        ? `${this.homepageUrl}${link.substring(1)}`
-        : `${this.homepageUrl}${link}`
+      formattedLink = `${this.rootDomain}${link}`
     } else if (!/(http|https)|\.(com|net|org|biz|ca|care|gov)/.test(link)) {
     formattedLink = `${this.homepageUrl}${link}`
     }
     const trimLink = this.trimQuery(formattedLink)
     return trimLink
+  }
+
+  getRootDomain(url) {
+    const domain = new URL(url)
+    return `${domain.protocol}//${domain.host}`
   }
 
    trimQuery(link) {
@@ -129,8 +136,8 @@ class LinkDiscoverer {
   * @memberof linkDiscoverer
   */
 
-  requestPage(url) {
-    return axios.get(url)
+  requestPage() {
+    return axios.get(this.currentUrl)
   }
 
   /**
@@ -154,7 +161,7 @@ class LinkDiscoverer {
   }
 
   get sitemap() {
-    return this.pages
+    return { pages: this.pages, crawled: this.crawledPages }
   }
 
   set sitemap(urls) {
