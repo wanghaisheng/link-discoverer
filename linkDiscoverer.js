@@ -83,7 +83,8 @@ class LinkDiscoverer {
       anchors.forEach((anchor) => {
         if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
           const link = this.formatLink(anchor.attribs.href)
-          if (link.includes(this.homepageUrl) && !this.pagesToCrawl.includes(link) && !this.crawledPages.includes(link) && !this.urlsWithErrors.includes(link) && this.currentUrl !== link) {
+          const uniqueArr = [... new Set([...this.pagesToCrawl, ...this.crawledPages, ...this.urlsWithErrors ])]
+          if (link.includes(this.homepageUrl) && !uniqueArr.includes(link) && this.currentUrl !== link) {
             this.pagesToCrawl.push(link)
           }
         }
