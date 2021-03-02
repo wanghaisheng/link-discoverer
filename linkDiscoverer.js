@@ -8,7 +8,6 @@ class LinkDiscoverer {
     const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
     this.homepageUrl = url
     this.rootDomain = this.getRootDomain(url)
-    this.pages = [url]
     this.pagesToCrawl = [url]
     this.crawledPages = []
     this.currentUrl = null
@@ -68,6 +67,8 @@ class LinkDiscoverer {
       } 
   }
 
+  in
+
   /**
    * Find links on the page
    *
@@ -82,9 +83,6 @@ class LinkDiscoverer {
       anchors.forEach((anchor) => {
         if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
           const link = this.formatLink(anchor.attribs.href)
-          if (link.includes(this.homepageUrl) && !this.pages.includes(link)) {
-            this.pages.push(link)
-          }
           if (link.includes(this.homepageUrl) && !this.pagesToCrawl.includes(link) && !this.crawledPages.includes(link) && !this.urlsWithErrors.includes(link) && this.currentUrl !== link) {
             this.pagesToCrawl.push(link)
           }
@@ -161,11 +159,11 @@ class LinkDiscoverer {
   }
 
   get sitemap() {
-    return { pages: this.pages, crawled: this.crawledPages }
+    return this.crawledPages
   }
 
   set sitemap(urls) {
-    this.pages = urls
+    this.crawledPages = urls
   }
 }
 
