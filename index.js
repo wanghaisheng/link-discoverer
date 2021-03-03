@@ -1,6 +1,6 @@
-const LinkDiscoverer = require('./linkDiscoverer')
 const express = require('express')
 const { json } = require('body-parser')
+const LinkDiscoverer = require('./linkDiscoverer')
 const app = express()
 const port = process.env.PORT || 8080
 
@@ -12,7 +12,7 @@ async function rover (url) {
   return linkDiscoverer.sitemap
 }
 
-app.get('/', (req, res) => res.send('I\'m Listening!'))
+app.get('/', (req, res) => res.send('I\'m Listening.'))
 
 app.post('/', async (req, res) => {
   try {
