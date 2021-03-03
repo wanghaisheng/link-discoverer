@@ -1,9 +1,11 @@
+const https = require('https')
 const axios = require('axios')
 const cheerio = require('cheerio')
+
 class LinkDiscoverer {
-  constructor(homepageUrl) {
+  constructor (homepageUrl) {
     if (!homepageUrl) {
-      throw new Error('missing constructor param')
+      throw new Error('Constructor is missing the homepage URL.')
     }
     const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
     this.homepageUrl = url
@@ -20,58 +22,51 @@ class LinkDiscoverer {
 
   /**
    * Tests if a string is a Valid URL
-   * @param {*} str
-   * @returns { Boolean }
+   * @param {String} str
+   * @returns
    * @memberof LinkDiscoverer
    */
-
-  validURL(str) {
-    var pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
+  validURL (str) {
+    const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
       '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
       '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
       '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
       '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
       '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
-    return !!pattern.test(str);
+    return !!pattern.test(str)
   }
 
   /**
    * Get next page URL to crawl
-   *
    * @memberof linkDiscoverer
    */
-
-  nextPage() {
+  nextPage () {
     return this.pagesToCrawl.pop()
   }
 
   /**
    * Discover all Links on the website
-   *
    * @memberof linkDiscoverer
    */
-
-  async run() {
-      while (this.pagesToCrawl.length > 0) {
-        try {
-          const url = this.nextPage()
-          const page = await this.requestPage(url)
-          await this.getLinks(page.data)
-          this.crawledPages.push(url) 
-        } catch (error) {
-          console.log(error)
-        }
-      } 
+  async run () {
+    while (this.pagesToCrawl.length > 0) {
+      try {
+        const url = this.nextPage()
+        const page = await this.requestPage(url)
+        this.getLinks(page.data)
+        this.crawledPages.push(url) 
+      } catch (error) {
+        console.error(error)
+      }
+    } 
   }
 
   /**
    * Find links on the page
-   *
-   * @param {*} page
+   * @param {String} page
    * @memberof linkDiscoverer
    */
-
-  getLinks(page) {
+  getLinks (page) {
     if (page && typeof page === "string") {
       const $ = cheerio.load(page)
       const anchors = $('a').toArray()
@@ -91,8 +86,7 @@ class LinkDiscoverer {
 
   /**
    * Make sure the link is an absolute path
-   *
-   * @param {*} link
+   * @param {String} link
    * @returns
    * @memberof LinkDiscoverer
    */
@@ -109,55 +103,56 @@ class LinkDiscoverer {
     return trimLink
   }
 
-   trimQuery(link) {
-
-     if (link.includes('?')) {
-       const li = link.lastIndexOf('?')
-       link = link.substr(0, li)
-     }
-     if (link.includes('#')) {
+  /**
+   * @memberof LinkDiscoverer
+   * @param {String} link 
+   * @returns 
+   */
+  trimQuery (link) {
+    if (link.includes('?')) {
+      const li = link.lastIndexOf('?')
+      link = link.substr(0, li)
+    }
+    if (link.includes('#')) {
       const li = link.lastIndexOf('#')
       link = link.substr(0, li)
     }
-     return link
-   }
+    return link
+  }
+
   /**
   * GET request to url
-  *
-  * @param {*} url
+  * @param {String} url
   * @returns
   * @memberof linkDiscoverer
   */
-
-  requestPage(url) {
-    return axios.get(url)
+  requestPage (url) {
+    return axios.get(url, {
+      httpsAgent: new https.Agent({ rejectUnauthorized: false })
+    })
   }
 
   /**
    * Check if the anchor contains any of the rejected formats
-   *
    * @param {String} anchor
-   * @returns Boolean
+   * @returns
    * @memberof linkDiscoverer
    */
-  isKeeper(anchor) {
+  isKeeper (anchor) {
     return this.urlRejects.every(reject => !anchor.includes(reject))
   }
+
   /**
-   * Remove any querystrings and hash from url
-   *
-   * @param {*} url
-   * @memberof linkDiscoverer
+   * @memberof LinkDiscoverer
    */
-  scrubLink(url) {
-
-  }
-
-  get sitemap() {
+  get sitemap () {
     return this.pages
   }
 
-  set sitemap(urls) {
+  /**
+   * @memberof LinkDiscoverer
+   */
+  set sitemap (urls) {
     this.pages = urls
   }
 }
