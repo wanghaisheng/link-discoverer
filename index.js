@@ -1,18 +1,20 @@
-const express = require('express')
-const { json } = require('body-parser')
 const LinkDiscoverer = require('./linkDiscoverer')
+const express = require('express')
+const bodyParser = require('body-parser')
 const app = express()
 const port = process.env.PORT || 8080
 
-app.use(json({ limit: '1000kb' }))
+app.use(bodyParser.json({ limit: '1000kb' }))
 
-async function rover (url) {
+async function rover(url) {
   const linkDiscoverer = new LinkDiscoverer(url)
   await linkDiscoverer.run()
   return linkDiscoverer.sitemap
 }
 
-app.get('/', (req, res) => res.send('I\'m Listening.'))
+app.get('/', (req, res) => {
+  res.send('I\'m Here!')
+})
 
 app.post('/', async (req, res) => {
   try {
@@ -20,8 +22,10 @@ app.post('/', async (req, res) => {
     const sitemap = await rover(url)
     res.json(sitemap)
   } catch (err) {
-    res.status(503).send(err)
+    res.status(503).send(`There was a problem: ${err}`)
   }
 })
 
-app.listen(port, () => console.log(`:${port} I'm Listening.`))
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+})
