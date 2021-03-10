@@ -154,14 +154,14 @@ class LinkDiscoverer {
    * @memberof LinkDiscoverer
    */
   get sitemap () {
-    return this.pages
+    return this.crawledPages
   }
 
   /**
    * @memberof LinkDiscoverer
    */
   set sitemap (urls) {
-    this.pages = urls
+    this.crawledPages = urls
   }
 }
 
