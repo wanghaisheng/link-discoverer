@@ -134,8 +134,8 @@ class LinkDiscoverer {
   * @memberof linkDiscoverer
   */
 
-  requestPage (url) {
-    return axios.get(url, {
+  requestPage () {
+    return axios.get(this.currentUrl, {
       httpsAgent: new https.Agent({ rejectUnauthorized: false })
     })
   }
