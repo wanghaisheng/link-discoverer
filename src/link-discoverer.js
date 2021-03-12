@@ -1,25 +1,38 @@
 const https = require('https')
-const axios = require('axios')
+const axios = require('axios').create({
+  httpsAgent: new https.Agent({
+    rejectUnauthorized: false
+  })
+})
 const cheerio = require('cheerio')
+
+const reject = [
+  'tel:',
+  'mailto:',
+  '.jpg',
+  'javascript:void(0)'
+]
+
+function setUrl (homepageUrl) {
+  return (homepageUrl.slice(-1) !== '/')
+    ? `${homepageUrl}/`
+    : homepageUrl
+}
 
 class LinkDiscoverer {
   constructor (homepageUrl) {
     if (!homepageUrl) {
       throw new Error('Constructor is missing the homepage URL.')
     }
-    const url = (homepageUrl.slice(-1) !== '/') ? homepageUrl +'/' : homepageUrl
+    const url = setUrl(homepageUrl)
+
     this.homepageUrl = url
     this.rootDomain = this.getRootDomain(url)
     this.pagesToCrawl = [url]
     this.crawledPages = []
     this.currentUrl = null
     this.urlsWithErrors = []
-    this.urlRejects = [
-      'tel:',
-      'mailto:',
-      '.jpg',
-      'javascript:void(0)'
-    ]
+    this.urlRejects = reject
   }
 
   /**
@@ -29,18 +42,18 @@ class LinkDiscoverer {
    * @memberof LinkDiscoverer
    */
   validURL (str) {
-    const pattern = new RegExp('^(https?:\\/\\/)?' + // protocol
-      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // domain name
-      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
-      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // port and path
-      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
-      '(\\#[-a-z\\d_]*)?$', 'i'); // fragment locator
+    const pattern = new RegExp('^(https?:\\/\\/)?' + // Protocol
+      '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // Domain Name
+      '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR IP (v4) address
+      '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // Port and Path
+      '(\\?[;&a-z\\d%_.~+=-]*)?' + // Query String
+      '(\\#[-a-z\\d_]*)?$', 'i'); // Fragment Locator
     return !!pattern.test(str)
   }
 
   /**
    * Get next page URL to crawl
-   * @memberof linkDiscoverer
+   * @memberof LinkDiscoverer
    */
   nextPage () {
     return this.pagesToCrawl.pop()
@@ -48,29 +61,26 @@ class LinkDiscoverer {
 
   /**
    * Discover all Links on the website
-   * @memberof linkDiscoverer
+   * @memberof LinkDiscoverer
    */
-
-  async run() {
-      while (this.pagesToCrawl.length > 0) {
-        try {
-          this.currentUrl = this.nextPage()
-          const page = await this.requestPage()
-          await this.getLinks(page.data)
-          this.crawledPages.push(this.currentUrl) 
-        } catch (error) {
-          this.urlsWithErrors.push(this.currentUrl)
-          console.log(error)
-        }
+  async run () {
+    while (this.pagesToCrawl.length > 0) {
+      try {
+        this.currentUrl = this.nextPage()
+        const page = await this.requestPage()
+        this.getLinks(page.data)
+        this.crawledPages.push(this.currentUrl) 
+      } catch (error) {
+        this.urlsWithErrors.push(this.currentUrl)
+        console.log(error)
       }
+    }
   }
-
-  in
 
   /**
    * Find links on the page
    * @param {String} page
-   * @memberof linkDiscoverer
+   * @memberof LinkDiscoverer
    */
   getLinks (page) {
     if (page && typeof page === "string") {
@@ -79,7 +89,13 @@ class LinkDiscoverer {
       anchors.forEach((anchor) => {
         if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
           const link = this.formatLink(anchor.attribs.href)
-          const uniqueArr = [... new Set([...this.pagesToCrawl, ...this.crawledPages, ...this.urlsWithErrors ])]
+          const uniqueArr = [
+            ...new Set([
+              ...this.pagesToCrawl,
+              ...this.crawledPages,
+              ...this.urlsWithErrors
+            ])
+          ]
           if (link.includes(this.homepageUrl) && !uniqueArr.includes(link) && this.currentUrl !== link) {
             this.pagesToCrawl.push(link)
           }
@@ -105,17 +121,22 @@ class LinkDiscoverer {
     return trimLink
   }
 
-  getRootDomain(url) {
+  /**
+   * @memberof LinkDiscoverer
+   * @param {String} url 
+   * @returns 
+   */
+  getRootDomain (url) {
     const domain = new URL(url)
     return `${domain.protocol}//${domain.host}`
   }
+
   /**
    * @memberof LinkDiscoverer
    * @param {String} link 
    * @returns 
    */
-   trimQuery(link) {
-
+  trimQuery (link) {
      if (link.includes('?')) {
        const li = link.lastIndexOf('?')
        link = link.substr(0, li)
@@ -128,23 +149,19 @@ class LinkDiscoverer {
   }
 
   /**
-  * GET request to url
   * @param {String} url
   * @returns
-  * @memberof linkDiscoverer
+  * @memberof LinkDiscoverer
   */
-
   requestPage () {
-    return axios.get(this.currentUrl, {
-      httpsAgent: new https.Agent({ rejectUnauthorized: false })
-    })
+    return axios.get(this.currentUrl)
   }
 
   /**
    * Check if the anchor contains any of the rejected formats
    * @param {String} anchor
    * @returns
-   * @memberof linkDiscoverer
+   * @memberof LinkDiscoverer
    */
   isKeeper (anchor) {
     return this.urlRejects.every(reject => !anchor.includes(reject))
