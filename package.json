@@ -22,7 +22,8 @@
     "axios": "^0.20.0",
     "cheerio": "^1.0.0-rc.3",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "simple-oauth2": "^4.2.0"
   },
   "devDependencies": {
     "jest": "^26.4.2",

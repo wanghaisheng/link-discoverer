@@ -1,5 +1,7 @@
+require('dotenv').config()
 const express = require('express')
 const LinkDiscoverer = require('./link-discoverer')
+const Sitemap = require('./sitemap')
 const app = express()
 const port = process.env.PORT || 8080
 
@@ -20,6 +22,16 @@ app.post('/', async (req, res) => {
     res.json(sitemap)
   } catch (err) {
     res.status(503).json(err)
+  }
+})
+
+app.post('/internal', async (req, res) => {
+  try {
+    const sitemap = new Sitemap(req.body)
+    const pages = sitemap.getSitemap()
+    res.json(pages)
+  } catch (error) {
+    res.send(error)
   }
 })
 
