@@ -1,8 +1,9 @@
 const axios = require('axios')
 const { CMS_URL } = process.env
 const { getToken } = require('./auth')
+const LinkDiscoverer = require('./link-discoverer')
 
-module.exports = class Sitemap {
+module.exports = class Sitemap extends LinkDiscoverer {
   constructor (params) {
     this.token = getToken()
     this.locationUrn = params.locationUrn
@@ -27,6 +28,10 @@ module.exports = class Sitemap {
       .filter(w => w.location_urn === locationUrn)
       .filter(w => w.is_production)
     return clw[0].urn
+  }
+  
+  getSitemap () {
+    return this.onSingleDomain()
   }
 
   getWebsites (url) {

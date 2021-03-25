@@ -7,6 +7,13 @@ const port = process.env.PORT || 8080
 
 app.use(express.json({ limit: '1000kb' }))
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/', (req, res, next) => {
+    console.log(req.path, req.body)
+    next()
+  })
+}
+
 async function rover (url) {
   const linkDiscoverer = new LinkDiscoverer(url)
   await linkDiscoverer.run()

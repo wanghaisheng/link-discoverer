@@ -72,7 +72,7 @@ class LinkDiscoverer {
         this.crawledPages.push(this.currentUrl) 
       } catch (error) {
         this.urlsWithErrors.push(this.currentUrl)
-        console.log(error)
+        console.error(error)
       }
     }
   }
