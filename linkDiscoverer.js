@@ -51,12 +51,12 @@ class LinkDiscoverer {
    * @memberof linkDiscoverer
    */
 
-  async run() {
+  async run () {
       while (this.pagesToCrawl.length > 0) {
         try {
           this.currentUrl = this.nextPage()
           const page = await this.requestPage()
-          await this.getLinks(page.data)
+          this.getLinks(page.data)
           this.crawledPages.push(this.currentUrl) 
         } catch (error) {
           this.urlsWithErrors.push(this.currentUrl)
@@ -76,11 +76,27 @@ class LinkDiscoverer {
     if (page && typeof page === "string") {
       const $ = cheerio.load(page)
       const anchors = $('a').toArray()
+
       anchors.forEach((anchor) => {
-        if (anchor.attribs && anchor.attribs.href && this.isKeeper(anchor.attribs.href)) {
+        if (
+          anchor.attribs &&
+          anchor.attribs.href &&
+          this.isKeeper(anchor.attribs.href)
+        ) {
           const link = this.formatLink(anchor.attribs.href)
-          const uniqueArr = [... new Set([...this.pagesToCrawl, ...this.crawledPages, ...this.urlsWithErrors ])]
-          if (link.includes(this.homepageUrl) && !uniqueArr.includes(link) && this.currentUrl !== link) {
+          const uniqueArr = [
+            ...new Set([
+              ...this.pagesToCrawl,
+              ...this.crawledPages,
+              ...this.urlsWithErrors
+            ])
+          ]
+
+          if (
+            link.includes(this.homepageUrl) &&
+            !uniqueArr.includes(link) &&
+            this.currentUrl !== link
+          ) {
             this.pagesToCrawl.push(link)
           }
         }
