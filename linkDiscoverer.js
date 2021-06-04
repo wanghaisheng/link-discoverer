@@ -1,5 +1,7 @@
 const https = require('https')
-const axios = require('axios')
+const axios = require('axios').create({
+  httpsAgent: new https.Agent({ rejectUnauthorized: false })
+})
 const cheerio = require('cheerio')
 
 class LinkDiscoverer {
@@ -18,7 +20,8 @@ class LinkDiscoverer {
       'tel:',
       'mailto:',
       '.jpg',
-      'javascript:void(0)'
+      'javascript:void(0)',
+      'javascript:;'
     ]
   }
 
@@ -110,7 +113,7 @@ class LinkDiscoverer {
    * @returns
    * @memberof LinkDiscoverer
    */
-  formatLink(link) {
+  formatLink (link) {
     let formattedLink = link
     if (link.charAt(0) === '/') {
       formattedLink = `${this.rootDomain}${link}`
@@ -125,6 +128,7 @@ class LinkDiscoverer {
     const domain = new URL(url)
     return `${domain.protocol}//${domain.host}`
   }
+
   /**
    * @memberof LinkDiscoverer
    * @param {String} link 
@@ -149,11 +153,8 @@ class LinkDiscoverer {
   * @returns
   * @memberof linkDiscoverer
   */
-
   requestPage () {
-    return axios.get(this.currentUrl, {
-      httpsAgent: new https.Agent({ rejectUnauthorized: false })
-    })
+    return axios.get(this.currentUrl)
   }
 
   /**
@@ -168,6 +169,7 @@ class LinkDiscoverer {
 
   /**
    * @memberof LinkDiscoverer
+   * @returns
    */
   get sitemap () {
     return this.crawledPages
