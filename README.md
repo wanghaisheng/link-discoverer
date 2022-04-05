@@ -15,6 +15,13 @@ npm run dev
 node index.js
 ```
 
+## heroku
+
+
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/wanghaisheng/link-discoverer/tree/main)
+
+
 ## GCloud Cloud Run Deploy
 
 You need an authenticated GCloud account with a project will billing configured and access to IAM and Cloud Run services.
