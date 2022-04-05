@@ -19,7 +19,7 @@ node index.js
 
 
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/wanghaisheng/link-discoverer/tree/main)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/wanghaisheng/link-discoverer/tree/master)
 
 
 ## GCloud Cloud Run Deploy
